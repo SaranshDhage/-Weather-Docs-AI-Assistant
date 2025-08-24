@@ -1,131 +1,146 @@
-# Weather-Docs-AI-Assistant
+# Weather Docs AI Assistant
 
-A fully functional, modular AI pipeline demonstrating:
-
-- **Agentic routing with LangGraph** (weather vs. RAG on a PDF)
-- **Weather** via OpenWeatherMap API
-- **RAG** with Qdrant vector DB and HuggingFace embeddings
-- **LLM processing** via **Groq** (LangChain `ChatGroq`)
-- **Embeddings** generation & storage in Qdrant (PDF chunks + interaction summaries)
-- **LangSmith** tracing & evaluation
-- **Clean, testable code** with `pytest`
-- **Streamlit** UI chat demo
-
-> ✅ This code is compatible with **Groq** (not OpenAI).
+This project is an **AI-powered assistant** built with **LangChain**, **Groq LLMs**, **Qdrant vector database**, and a **Weather API**.  
+It combines **document-based question answering (RAG pipeline)** with **real-time weather updates**, making it both a knowledge retrieval assistant and a utility tool.
 
 ---
 
-## 1) Project Structure
+## 🚀 Features
+- **RAG Pipeline**: Retrieve answers from custom documents using embeddings and a vector database (Qdrant).
+- **Weather Integration**: Fetch live weather updates using a Weather API.
+- **LLM Integration**: Powered by Groq through LangChain for efficient reasoning.
+- **Evaluation**: Integrated with LangSmith for tracing and debugging.
+- **Modular Codebase**: Organized into independent components for LLMs, embeddings, vector stores, weather, and routing.
+
+---
+
+## 📂 Project Structure
 
 ```
-langgraph_rag_weather_groq/
-├─ app.py                      # Streamlit UI
-├─ graph.py                    # LangGraph build (nodes + state)
-├─ router.py                   # LLM/heuristic router (weather vs rag)
-├─ weather.py                  # OpenWeatherMap client + summarizer
-├─ rag.py                      # PDF ingestion, retrieval, QA synthesis
-├─ vectorstore.py              # Qdrant setup, upsert, retrieval helpers
-├─ llm.py                      # Groq LLM wrapper and prompts
-├─ embeddings.py               # HF embeddings
-├─ settings.py                 # Env + configuration
-├─ eval_langsmith.py           # Example LangSmith evaluation script
-├─ requirements.txt
-├─ .env.example
-├─ tests/
-│  ├─ test_router.py
-│  ├─ test_weather.py
-│  └─ test_rag.py
-└─ data/
-   └─ sample.pdf               # Optional sample placeholder
+LANGCHAIN_PROJECT/
+│── data/                      # Store input documents for embeddings
+│── tests/                     # Unit tests for each module
+│   ├── test_rag.py             # Tests RAG pipeline
+│   ├── test_router.py          # Tests routing logic
+│   ├── test_weather.py         # Tests weather integration
+│
+│── .env                        # Environment variables (API keys etc.)
+│── .gitignore                  # Ignore cache, venv, and secrets
+│── app.py                      # Entry point (Streamlit app or CLI)
+│── embeddings.py               # Handles document embeddings
+│── eval_langsmith.py           # Evaluation & tracing with LangSmith
+│── graph.py                    # Manages computation graphs / flow
+│── llm.py                      # Loads and configures Groq LLM
+│── rag.py                      # Core Retrieval-Augmented Generation pipeline
+│── router.py                   # Directs queries to RAG or Weather
+│── settings.py                 # Global configuration management
+│── vectorstore.py              # Handles Qdrant vector DB operations
+│── weather.py                  # Weather API integration
+│── requirements.txt            # Python dependencies
+│── README.md                   # Project documentation
 ```
 
 ---
 
-## 2) Setup
+## ⚙️ Setup Instructions
 
-### Prerequisites
+### 1. Clone the Repository
+```bash
+git clone https://github.com/<your-username>/<your-repo-name>.git
+cd <your-repo-name>
+```
 
-- Python 3.10+
-- A running **Qdrant** server (local via Docker or Qdrant Cloud).
-- API keys:
-  - `GROQ_API_KEY`
-  - `OPENWEATHER_API_KEY`
-  - `LANGSMITH_API_KEY` (optional, for evaluation + tracing)
-
-### Install dependencies
-
+### 2. Create a Virtual Environment
 ```bash
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate   # Mac/Linux
+.venv\Scripts\activate    # Windows
+```
+
+### 3. Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### Environment variables
-
-Create `.env` (copy from `.env.example`) and fill values:
-
-```bash
-cp .env.example .env
+### 4. Configure Environment Variables
+Create a `.env` file in the project root and add:
+```
+GROQ_API_KEY=your_groq_api_key
+QDRANT_API_KEY=your_qdrant_api_key
+QDRANT_URL=your_qdrant_url
+WEATHER_API_KEY=your_weather_api_key
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=your_langsmith_key
 ```
 
-**.env keys**
-
-- `GROQ_API_KEY=`
-- `GROQ_MODEL=llama3-70b-8192`
-- `OPENWEATHER_API_KEY=`
-- `QDRANT_URL=`
-- `QDRANT_API_KEY=`
-- `LANGCHAIN_TRACING_V2=true`
-- `LANGCHAIN_PROJECT=weather-rag-groq-demo`
-- `LANGSMITH_API_KEY=`
-
----
-
-## 3) Run the Streamlit UI
-
+### 5. Run the Application
+If using Streamlit frontend:
 ```bash
 streamlit run app.py
 ```
 
-- Upload a PDF (once) to ingest into Qdrant.
-- Ask natural questions—router will decide between:
-  - Weather (e.g., "What's the weather in Mumbai ?")
-  - RAG over your PDF (e.g., "Summarize section 2" or "What does the paper say about ...?")
-
----
-
-## 4) Tests
-
+If running CLI script:
 ```bash
-pytest -q
+python app.py
 ```
 
-> Tests use **mocks** for external services so they run locally without API calls.
+---
+
+## 🔄 How the System Works
+
+1. **Document Ingestion**
+   - Documents inside `data/` are embedded using the embeddings model.
+   - Embeddings are stored inside **Qdrant vector database** (`vectorstore.py`).
+
+2. **Query Routing**
+   - User query is passed to the `router.py`.
+   - If query is about **weather**, it is directed to `weather.py`.
+   - Otherwise, query goes into the **RAG pipeline**.
+
+3. **RAG Pipeline**
+   - Query embeddings are generated (`embeddings.py`).
+   - Relevant context chunks are retrieved from **Qdrant** (`vectorstore.py`).
+   - Retrieved chunks are combined with the query to form a prompt (`rag.py`).
+   - Groq LLM (`llm.py`) generates a final response.
+
+4. **Weather API**
+   - For weather queries, the request goes directly to the Weather API (`weather.py`).
+   - Real-time weather details are returned to the user.
+
+5. **LangSmith Evaluation**
+   - Every request/response is logged (`eval_langsmith.py`).
+   - Useful for debugging, performance monitoring, and fine-tuning.
 
 ---
 
-## 5) LangSmith Evaluation
+## 🧪 Testing
 
-- Make sure `LANGSMITH_API_KEY` is set and tracing turned on.
-- Example evaluator run:
-
+Run unit tests with:
 ```bash
-python eval_langsmith.py
+pytest tests/
 ```
 
-This creates a lightweight evaluation that judges outputs for helpfulness/groundedness using an LLM-as-judge approach.
+---
+
+## 🛠️ Tech Stack
+- **LangChain** – Orchestration framework for LLMs
+- **Groq LLM** – Fast inference large language models
+- **Qdrant** – Vector database for embeddings
+- **Weather API** – Live weather data integration
+- **Streamlit** – Frontend interface (optional)
+- **LangSmith** – Tracing, debugging, and evaluation
 
 ---
 
-## 6) Notes & Decisions
+## 📌 Future Improvements
+- Add support for multiple APIs (e.g., finance, news)
+- Enhance RAG pipeline with rerankers
+- Add Docker for containerized deployment
 
-- **Embeddings**: Uses `sentence-transformers/all-MiniLM-L6-v2` via HuggingFace for simplicity & low cost. You can swap the model in `embeddings.py`.
-- **Collections**:
-  - `docs`: PDF chunks
-  - `interactions`: Summaries of each final response (weather or RAG) so the app can RAG over its own past outputs.
-- **Routing**: Uses Groq LLM classification with regex fallback for reliability.
-- **LLM**: Defaults to `llama3-70b-8192`. Adjust via env.
-- **Security**: Keys are read from env; never hardcode credentials.
-- **Clean code**: Modules are small, typed, and unit-tested via mocks.
+---
+
+## 👨‍💻 Author
+Built by **Saransh Dhage**  
+📍 Data Scientist | AI/ML Enthusiast | Exploring Finance & AI
 
 ---
