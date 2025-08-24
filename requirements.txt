@@ -1,0 +1,21 @@
+langchain>=0.2.15
+langchain-core>=0.2.38
+langchain-community>=0.2.12
+langchain-qdrant>=0.1.4
+langgraph>=0.2.26
+langsmith>=0.1.67
+python-dotenv>=1.0.1
+pydantic>=2.7.0
+pydantic-settings>=2.3.4
+qdrant-client>=1.9.0
+sentence-transformers>=3.0.1
+transformers>=4.43.2
+torch>=2.3.0; platform_system != "Darwin" or platform_machine != "arm64"
+# torch install on M1/M2 can differ; see PyTorch website if needed.
+pypdf>=4.2.0
+streamlit>=1.36.0
+requests>=2.32.3
+tiktoken>=0.7.0
+langchain-groq>=0.1.9
+pytest>=8.2.2
+pytest-mock>=3.14.0
