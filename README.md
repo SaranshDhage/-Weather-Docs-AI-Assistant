@@ -1,4 +1,4 @@
-# LangGraph Agentic Pipeline: Weather + RAG (Groq, Qdrant, LangSmith, Streamlit)
+# Weather-Docs-AI-Assistant
 
 A fully functional, modular AI pipeline demonstrating:
 
